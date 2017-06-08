@@ -1,0 +1,35 @@
+cus<-read.xlsx("Worksheet_82.csv", sheet ="Sheet1", startRow = 1, colNames = TRUE,
+                                  rowNames = FALSE, detectDates = FALSE, skipEmptyRows = TRUE,
+                                  rows = NULL, cols = NULL, check.names = FALSE, namedRegion = NULL)
+
+cus.use<-cus[,-1] # trim data to numerical cols only
+cus.use<-cus.use[,-2] # trim data to numerical cols only
+
+cus.dist=dist(cus.use)
+cus.hclust = hclust(cus.dist)
+plot(cus.hclust,labels=cus$rsn_of_cancel,main='Default from hclust')
+groups.8 = cutree(cus.hclust,8)
+aggregate(cus.use,list(groups.8),mean)
+
+
+
+
+library(car)
+scatterplot.matrix(~totmsgposted+totmsgreplied+tot_course+tot_num_lessons
+                   +canclled
+                   , data=cus.use,
+                   main="Scatter")
+
+
+# Model Based Clustering
+library(mclust)
+fit <- Mclust(cus.use)
+plot(fit) # plot results 
+#machine select model
+summary(fit)
+
+
+#Hand select model
+fitSelect <- Mclust(cus.use, modelName = "EEV")
+plot(fitSelect, what = "classification", main = FALSE)
+newCusOut<-data.frame(cus,fitSelect$G)
